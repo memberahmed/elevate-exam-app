@@ -1,34 +1,32 @@
-import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
-export default async function middleware(request: NextRequest) {
-  const token = request.cookies.get("next-auth.session-token");
-  const currentUrl = request.nextUrl.pathname;
-  const nextToken = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-  console.log("token from middleware", nextToken);
-  //   const roles = {
-  //     admin: ["/dashboard", "/server", "/client"],
-  //     doctor: ["/client"],
-  //     manager: ["/server", "/client"],
-  //   };
+const guesturl = ['/login', '/register', '/forgetpassword'];
 
-  //   const pathsOfRole = roles?.[nextToken?.roles];
+export default function middleware(request: NextRequest) {
+    const token = request.cookies.get('next-auth.session-token');
+    const currentUrl = request.nextUrl.pathname;
+    
+    // If logged in and trying to access guest-only pages
+    if (token && guesturl.includes(currentUrl)) {
+        return NextResponse.redirect(new URL('/', request.url)); // Redirect to homepage
+    }
 
-  // authnicate
-  if (!token) return NextResponse.rewrite(new URL("/login", request.url));
+    // If not logged in and trying to access restricted pages
+    if (!token && !guesturl.includes(currentUrl)) {
+        return NextResponse.rewrite(new URL('/login',request.url )); // Redirect to login
+    }
 
-  //   // role based access level
-  //   if (pathsOfRole?.indexOf(currentUrl) === -1)
-  //     return NextResponse.redirect(new URL("/denied", request.url));
-
-  return NextResponse.next();
+    // Allow access to other routes
+    return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/server", "/client", "/dashboard"],
+    matcher: [
+        '/',                // Homepage
+        '/client', 
+        '/server',         
+        '/login',           // Guest route
+        '/register',        // Guest route
+        '/forgetpassword'   // Guest route
+    ],
 };
-
-const permissionList = ["add_prodcut"];

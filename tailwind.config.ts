@@ -11,6 +11,9 @@ const config: Config = {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        maincolor : '#4461F2' ,
+        muted : '#979CA3',
+        backgroundColor : 'rgba(1, 1 , 1 , 0.1)'
       },
     },
   },

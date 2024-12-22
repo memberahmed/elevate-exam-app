@@ -1,12 +1,12 @@
-"use client";
-import LoginForm from "@/components/login/Login";
 
+"use client";
+import VerfiyEmail from "@/components/forgetpassword/forgetpassword";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useContext } from "react";
 
-export default function Signin() {
-
+export default function ForgetPassword() {
   const pathname = usePathname();
   return (
     <div className="login grid grid-cols-1 md:grid-cols-3 gap-8 md:space-y-10 h-screen ">
@@ -50,7 +50,7 @@ export default function Signin() {
   
       {/* Register Form */}
       <div className="mt-6 md:mt-10">
-        <LoginForm />
+        <VerfiyEmail />
       </div>
     </div>
   </div>
