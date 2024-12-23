@@ -1,16 +1,21 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { signIn  } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useFormik } from "formik";
-import * as Yup from 'yup';
+import * as Yup from "yup";
+import DotsLoader from "../loaders/dots-loader";
 export default function RegisterForm() {
   const router = useRouter();
-  const [isReloading , setIsReloading] = useState(false)
-  const [error , setError] = useState('')
+  const [isReloading, setIsReloading] = useState(false);
+  const [error, setError] = useState("");
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const [repasswordVisible, setRePasswordVisible] = useState<boolean>(false);
+  const showPasswordVisible = () => setPasswordVisible(!passwordVisible);
+  const showRePasswordVisible = () => setRePasswordVisible(!repasswordVisible);
   interface RegisterForm {
     firstName: string;
     lastName: string;
@@ -21,60 +26,79 @@ export default function RegisterForm() {
     phone: string;
   }
   const validationSchema = Yup.object().shape({
-    firstName : Yup.string().min(2 , 'Minium length is two characters').max(25 , 'Maxium length is 25 characters').required('First name is required'), 
-    lastName : Yup.string().min(2 , 'Minium length is two characters').max(25 , 'Maxium length is 25 characters').required('Last name is required'), 
-    username : Yup.string().min(2 , 'Minium length is two characters').max(25 , 'Maxium length is 25 characters').required('User name is required'), 
-    email : Yup.string().email('Email is invalid').required('Email  is required'), 
-    password : Yup.string().matches(/(?=.*[A-Z])(?=.*\d).{6,50}$/
-    , 'Password must have upper case letter and number at least and minlength is 6 letters').required('Password name is required'), 
-    rePassword : Yup.string().oneOf([Yup.ref('password')] , 'Password and confirm password are not the same').required('confirm password  is required'), 
-    phone : Yup.string().matches(/^01[0125][0-9]{8}$/ , 'Please enter a vild egyptian number').required('Phone number name is required'), 
-  })
-  async function handleRegister(formValues:RegisterForm){
+    firstName: Yup.string()
+      .min(2, "Minium length is two characters")
+      .max(25, "Maxium length is 25 characters")
+      .required("First name is required"),
+    lastName: Yup.string()
+      .min(2, "Minium length is two characters")
+      .max(25, "Maxium length is 25 characters")
+      .required("Last name is required"),
+    username: Yup.string()
+      .min(2, "Minium length is two characters")
+      .max(25, "Maxium length is 25 characters")
+      .required("User name is required"),
+    email: Yup.string()
+      .email("Email is invalid")
+      .required("Email  is required"),
+    password: Yup.string()
+      .matches(
+        /(?=.*[A-Z])(?=.*\d).{6,50}$/,
+        "Password must have upper case letter and number at least and minlength is 6 letters"
+      )
+      .required("Password name is required"),
+    rePassword: Yup.string()
+      .oneOf(
+        [Yup.ref("password")],
+        "Password and confirm password are not the same"
+      )
+      .required("confirm password  is required"),
+    phone: Yup.string()
+      .matches(/^01[0125][0-9]{8}$/, "Please enter a vild egyptian number")
+      .required("Phone number name is required"),
+  });
+  async function handleRegister(formValues: RegisterForm) {
     setIsReloading(true);
-    let data = await fetch(`https://exam.elevateegy.com/api/v1/auth/signup`  , {
-      method : 'POST',
-      headers : {
+    let data = await fetch(`https://exam.elevateegy.com/api/v1/auth/signup`, {
+      method: "POST",
+      headers: {
         "Content-Type": "application/json",
       },
-      body : JSON.stringify(formValues)
+      body: JSON.stringify(formValues),
     });
     const response = await data.json();
     try {
-      if(response.message === 'success'){
-        console.log('response is here' , response);
+      if (response.message === "success") {
+        console.log("response is here", response);
         setIsReloading(false);
 
-        router.push('/login');
-      }
-      else{
-        console.log('error from try' , response)
+        router.push("/login");
+      } else {
+        console.log("error from try", response);
         setError(response.message);
         setIsReloading(false);
-
       }
-    }catch(error){
-      console.error('error is here'  , error)
+    } catch (error) {
+      console.error("error is here", error);
     }
   }
   const formik = useFormik({
-    initialValues : {
-    firstName: "",
-    lastName: "",
-    username: "",
-    email: "",
-    password: "",
-    rePassword: "",
-    phone: "",
+    initialValues: {
+      firstName: "",
+      lastName: "",
+      username: "",
+      email: "",
+      password: "",
+      rePassword: "",
+      phone: "",
     },
-    validationSchema : validationSchema,
-    onSubmit : handleRegister ,
-    
-  })
+    validationSchema: validationSchema,
+    onSubmit: handleRegister,
+  });
   console.log(isReloading);
   // const [user , setUser] = useState({
   //   firstName : '',
-  //   lastName : '' , 
+  //   lastName : '' ,
   //   username : '',
   //   email : '' ,
   //   password : '',
@@ -82,7 +106,7 @@ export default function RegisterForm() {
   //   phone : 0,
   // })
   // const getUser = (e: React.ChangeEvent<HTMLInputElement>) =>{
-  
+
   //   setUser((prevUser) => ({
   //     ...prevUser,
   //     [e.target.name]: e.target.value,
@@ -112,98 +136,143 @@ export default function RegisterForm() {
   // };
   return (
     <div className=" flex flex-col gap-8  items-center h-full ">
-      
-      {error && <div className="self-start px-48  mx-1 text-red-500 "> {error}</div>}
-      <form onSubmit={formik.handleSubmit} className=" w-[50%]  flex flex-col gap-6  ">
-        
+      {error && (
+        <div className="self-start px-48  mx-1 text-red-500 "> {error}</div>
+      )}
+      <form
+        onSubmit={formik.handleSubmit}
+        className=" w-[50%]  flex flex-col gap-6  "
+      >
         <p className="font-semibold text-lg">Sign Up</p>
 
         <input
           type="text"
-          className="w-full md:w-full lg:w-[410px] shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          className={`${formik.errors.firstName  && formik.values.firstName ? 'border-red-400':null} w-full md:w-full lg:w-[410px] shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
           placeholder="First Name"
           value={formik.values.firstName}
           name="firstName"
-          onChange={formik.handleChange }
+          onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          
         />
-        {formik.errors.firstName && formik.values.firstName ? <div className="self-start px-2   text-red-500 "> <p>{formik.errors.firstName}</p></div> : null}
+        {formik.errors.firstName && formik.values.firstName ? (
+          <div className="self-start px-2   text-red-500 ">
+            {" "}
+            <p>{formik.errors.firstName}</p>
+          </div>
+        ) : null}
         <input
           type="text"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          className={`${formik.errors.lastName && formik.values.lastName?'border-red-400': null} w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
           placeholder="Last Name"
           name="lastName"
           value={formik.values.lastName}
           onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
-          />
-          {formik.errors.lastName && formik.values.lastName  ? <div className="self-start px-2 text-red-500 "> {formik.errors.lastName}</div> : null}
+          onChange={formik.handleChange}
+        />
+        {formik.errors.lastName && formik.values.lastName ? (
+          <div className="self-start px-2 text-red-500 ">
+            {" "}
+            {formik.errors.lastName}
+          </div>
+        ) : null}
 
         <input
           type="text"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          className={`${formik.errors.username && formik.values.username  ? 'border-red-400':''} w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
           placeholder="UserName"
           name="username"
           value={formik.values.username}
           onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
+          onChange={formik.handleChange}
         />
-        {formik.errors.username && formik.values.username ? <div className="self-start px-2 text-red-500 "> <p>{formik.errors.username}</p></div> : null}
+        {formik.errors.username && formik.values.username ? (
+          <div className="self-start px-2 text-red-500 ">
+            {" "}
+            <p>{formik.errors.username}</p>
+          </div>
+        ) : null}
 
         <input
           type="email"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          className={`${formik.errors.email &&formik.values.email?'border-red-400':''} w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
           placeholder="Email"
           name="email"
           value={formik.values.email}
           onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
+          onChange={formik.handleChange}
         />
-        {formik.errors.email && formik.values.email ? <div className="self-start px-2 text-red-500 "> <p>{formik.errors.email}</p></div> : null}
+        {formik.errors.email && formik.values.email ? (
+          <div className="self-start px-2 text-red-500 ">
+            {" "}
+            <p>{formik.errors.email}</p>
+          </div>
+        ) : null}
 
-          <input
+        <input
           type="tel"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          className={`${formik.errors.phone &&formik.values.phone?'border-red-400':''} w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
           placeholder="Phone number"
           name="phone"
           value={formik.values.phone}
           onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
+          onChange={formik.handleChange}
         />
-        {formik.errors.phone && formik.values.phone ? <div className="self-start px-2   text-red-500 "> <p>{formik.errors.phone}</p></div> : null}
+        {formik.errors.phone && formik.values.phone ? (
+          <div className="self-start px-2   text-red-500 ">
+            {" "}
+            <p>{formik.errors.phone}</p>
+          </div>
+        ) : null}
 
-        <input
-          type="password"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
-          placeholder="Password"
-          name="password"
-          value={formik.values.password}
-          onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
-        />
-        {formik.errors.password && formik.values.password ? <div className="self-start px-2  mx-1 text-red-500 "> <p>{formik.errors.password}</p></div> : null}
+        <div className={ `${formik.errors.password &&formik.values.password?'border-red-400':''} shadow-lg border-2 p-2 rounded-lg focus-visible:out flex justify-between items-center `}>
+          <input
+            type={passwordVisible ? "text" : "password"}
+            className="w-full"
+            placeholder="Password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            name="password"
+          />
+          <i onClick={showPasswordVisible} className={`fa-solid fa-eye ${passwordVisible?'text-green-500':''}`}></i>
+        </div>
+        {formik.errors.password && formik.values.password ? (
+          <div className="self-start px-2  mx-1 text-red-500 ">
+            {" "}
+            <p>{formik.errors.password}</p>
+          </div>
+        ) : null}
 
+        <div className={`${formik.errors.rePassword &&formik.values.rePassword?'border-red-400':''} shadow-lg border-2 p-2 rounded-lg focus-visible:out flex justify-between items-center`}>
         <input
-          type="password"
-          className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+          type={repasswordVisible ? "text" : "password"}
+          className="w-full"
           placeholder="confirm Password"
           name="rePassword"
           value={formik.values.rePassword}
           onBlur={formik.handleBlur}
-          onChange={formik.handleChange }
+          onChange={formik.handleChange}
         />
-        {formik.errors.rePassword && formik.values.rePassword ? <div className="self-start px-2   text-red-500 "> <p>{formik.errors.rePassword}</p></div> : null}
+        <i onClick={showRePasswordVisible} className={`fa-solid fa-eye ${repasswordVisible?'text-green-500':''}`}></i>
+        </div>
+        {formik.errors.rePassword && formik.values.rePassword ? (
+          <div className="self-start px-2   text-red-500 ">
+            {" "}
+            <p>{formik.errors.rePassword}</p>
+          </div>
+        ) : null}
 
         <p className="text-sm text-center tracking-widest">
-          Already have an account? 
-          <span className="text-[#4461F2] "><Link href='/login'>Log In</Link></span>
+          Already have an account?
+          <span className="text-[#4461F2] ">
+            <Link href="/login">Log In</Link>
+          </span>
         </p>
         <button
           type="submit"
           className="bg-[#4461F2] text-white font-light text-sm w-full p-3 rounded-2xl"
         >
-          {!isReloading ? 'Create Account' : '...'}
+          {!isReloading ? "Create Account" : <span className="text-white flex items-center justify-center text-sm">  <DotsLoader /> </span>}
         </button>
       </form>
       <div className=" flex gap-3 items-center">

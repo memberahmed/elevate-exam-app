@@ -3,8 +3,12 @@ import Link from "next/link"
 import {  Subjects } from "../../app/InterFaces/InterFaces";
 import { MotionDiv } from "../MotionDiv/MotionDiv";
 
+interface DiplomaCardProps {
+  item: Subjects;
+  index: number;
+}
 
-const DiplomaCard = ({item}:{item:Subjects} , index:number) => {
+const DiplomaCard: React.FC<DiplomaCardProps>  = ({ item, index }) => {
 
    
    const variants = {

@@ -48,7 +48,7 @@ export default function Signin() {
         </Link>
       </div>
   
-      {/* Register Form */}
+      {/* Login Form */}
       <div className="mt-6 md:mt-10">
         <LoginForm />
       </div>

@@ -33,7 +33,6 @@ input:focus , button:focus{
 }
 button:disabled {
   opacity: .5;
- 
 }
 .active{
   border: 1px solid  #E0E0E9;

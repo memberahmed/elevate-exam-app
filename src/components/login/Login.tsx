@@ -1,16 +1,20 @@
 "use client";
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import {  useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { usePathname, useRouter  } from 'next/navigation'
+import DotsLoader from "../loaders/dots-loader";
 
 export default function LoginForm() {
   const pathname = usePathname()
   const router = useRouter()
   const [error, setError] = useState<string | null>(null);
+  const [isReloading, setIsReloading] = useState<boolean>(false);
+  const [passwordVisible, setPasswordVisible] = useState<boolean>(false);
+  const showPasswordVisible = () => setPasswordVisible(!passwordVisible)
   interface LoginForm  {
     email : string,
     password : string
@@ -19,6 +23,7 @@ export default function LoginForm() {
   
   const handleSubmit = async (formValues: LoginForm) => {
     try {
+      setIsReloading(true);
       const result = await signIn("credentials", {
         email: formValues.email,
         password: formValues.password,
@@ -28,9 +33,11 @@ export default function LoginForm() {
   
       if (result?.ok) {
         // Navigate to home or desired page
+        setIsReloading(false);
         router.push(pathname === "/login" ? "/" : `http://localhost:3000/${pathname}`);
       } else {
         // Handle error
+        setIsReloading(false);
         console.error(result?.error || "Sign-in failed");
         setError(result?.error || "Sign-in failed");
       }
@@ -60,9 +67,8 @@ export default function LoginForm() {
       {error && <p className="text-red-500 text-center text-sm">{error}</p>}
       <input
         type="text"
-        className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
+        className={` ${formik.errors.email && formik.values.email ? 'border-red-400':''} w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out`}
         placeholder="email"
-        
         value={formik.values.email}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
@@ -71,15 +77,18 @@ export default function LoginForm() {
         {formik.errors.email && formik.values.email ? <div className="self-start px-2 text-red-500 "> <p>{formik.errors.email}</p></div> : null}
 
       
-      <input
-        type="password"
-        className="w-full shadow-lg border-2 p-2 rounded-lg focus-visible:out"
-        placeholder="Password"
-        value={formik.values.password}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        name="password"
-      />
+        <div className={ `${formik.errors.password && formik.values.password ? 'border-red-400':''} shadow-lg border-2 p-2 rounded-lg focus-visible:out flex justify-between items-center `}>
+          <input
+            type={passwordVisible ? "text" : "password"}
+            className="w-full"
+            placeholder="Password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            name="password"
+          />
+          <i onClick={showPasswordVisible} className={`fa-solid fa-eye ${passwordVisible?'text-green-500':''}`}></i>
+        </div>
         {formik.errors.password && formik.values.password ? <div className="self-start px-2 text-red-500 "> <p>{formik.errors.password}</p></div> : null}
 
    
@@ -90,8 +99,10 @@ export default function LoginForm() {
       <button
         type="submit"
         className="bg-[#4461F2] text-white font-light text-sm w-full p-3 rounded-2xl"
+        
       >
-        Sign In
+        {!isReloading ? "Sign In" :  <span className="text-white flex items-center justify-center text-sm">  <DotsLoader /> </span> }
+        
       </button>
       <p className="text-[#4461F2] mx-auto"><Link  href={'/forgetpassword'}>Forget your password</Link> </p>
     </form>
@@ -110,7 +121,7 @@ export default function LoginForm() {
         <Image width={29} height={29} alt="google logo" src={"/Logo Google.png"} />
       </div>
       <div 
-        onClick={()=> signIn('twitter'  , {callbackUrl : pathname === "/login" ? "/" : pathname})}      className="w-[45px] h-[45px] login-item flex justify-center hover:shadow-lg items-center border p-2 shadow-md rounded-lg cursor-pointer">
+        onClick={()=> signIn('twitter'  , {callbackUrl : pathname === "/login" ? "/" : pathname})}   className="w-[45px] h-[45px] login-item flex justify-center hover:shadow-lg items-center border p-2 shadow-md rounded-lg cursor-pointer">
         <Image width={29} height={29} alt="twitter logo" src={"/Logo.png"} />
       </div>
       <div
