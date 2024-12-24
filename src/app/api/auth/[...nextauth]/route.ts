@@ -45,14 +45,7 @@ export const options: NextAuthOptions = {
       );
         const response = await data.json();
        
-       if(response.message === 'success'){
-        return response
-       }
-          
-       else {
-        // Pass error as a string to be consumed by the frontend
-        throw new Error(response.message || 'An error occurred.');
-      }
+      
       },
       credentials: {
         email: {

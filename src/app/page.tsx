@@ -19,7 +19,12 @@ export default async  function HomePage(){
   
   console.log('serversion from home' , serverSession);
  
-   response =  await fetchDiploma('subjects', 1)
+   const fetchResponse = await fetchDiploma('subjects', 1);
+   if ('data' in fetchResponse) {
+     response = fetchResponse.data as ResponseINterface;
+   } else {
+     errorMessage = 'Failed to fetch data. Please check your internet connection.';
+   }
   return (<>
     
     <div className="container mx-auto bg-gray-200 bg-opacity-50 flex-col  md:flex-row gap-x-20  flex">
@@ -82,18 +87,18 @@ export default async  function HomePage(){
             <span className="font-medium text-2xl text-[var(--font-color)]">Quizes</span>
             <span className="font-medium text-2xl text-[var(--font-color)]" >View All</span>
           </div>
+          {errorMessage && <div className="text-red-500 text-center">{errorMessage}</div>}
           <div 
-          
           className="qiz grid md:grid-cols-3  gap-3 mb-3 grid-cols-1 ">
           {response?.subjects?.map((subject: Subjects , index:number) => (
-       
+            
           <DiplomaCard item={subject} index = {index} key={subject._id} />
     
            ))}
 
           </div>
           </div>
-          {/* <LoadMore/> */}
+          <LoadMore/>
          </section>
          {/* end of qiz */}
       

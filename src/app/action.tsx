@@ -1,10 +1,16 @@
+'use server';
+
 import { getServerSession } from "next-auth";
 import { options } from "./api/auth/[...nextauth]/route";
+import { cookies } from 'next/headers';
 
 export const fetchDiploma = async (endPoint: string, page: number) => {
   try {
     // Get the server session
     const serverSession = await getServerSession(options);
+    const cookieStore = await cookies();
+    const theme = cookieStore.get('next-auth.session-token');
+    console.log('cookies', theme);
 
     // Perform the fetch request
     const result = await fetch(
@@ -23,11 +29,13 @@ export const fetchDiploma = async (endPoint: string, page: number) => {
 
     // Parse the JSON response
     const data = await result.json();
-    return data;
-  } catch (error) {
+    return { data }; // Wrap the data in an object to make it easier to differentiate from errors
+  } catch (error: any) {
     // Handle fetch errors and network issues
     console.error("Fetch failed:", error);
 
-    return { error: "Failed to fetch data. Please check your internet connection." };
+    return {
+      error: error.message || "Failed to fetch data. Please check your internet connection.",
+    };
   }
 };
